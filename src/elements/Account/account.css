@@ -1,0 +1,5 @@
+.logo {
+    height: 32px;
+    margin: 16px;
+    background: transparent url('../../../public/ppLogo.svg') no-repeat 0 0
+}
