@@ -1,28 +1,16 @@
-import React, {useCallback, useEffect, useState} from 'react';
 import {
-    ArrowDownOutlined,
-    ArrowUpOutlined,
     DashboardOutlined,
-    DesktopOutlined,
     UserOutlined,
 } from '@ant-design/icons';
 import './account.css';
-import {Breadcrumb, Calendar, Card, ConfigProvider, Image, Layout, List, Menu, Space, Statistic, theme} from 'antd';
+import {Breadcrumb, ConfigProvider, Image, Layout, Menu, theme} from 'antd';
 import {makeAutoObservable} from "mobx";
-import dayjs from 'dayjs'
-
 import {observer} from "mobx-react-lite";
-import BarGraph from "../Frames/barGraph";
-import LineGraph from "../Frames/lineGraph";
-import PieGraph from "../Frames/pieGraph";
 
-import {DatePicker} from 'antd';
-import {stringifyKey} from "mobx/dist/utils/utils";
-
-const {RangePicker} = DatePicker;
+import Company from "../Statistics/Company";
+import Dashboard from "../Statistics/Dashboard";
 
 const {Content, Footer, Sider} = Layout;
-
 
 class DynamicBreadCrumb {
     list: string[] = ['Company'];
@@ -36,33 +24,6 @@ class DynamicBreadCrumb {
     };
 }
 
-// class DynamicRangePicker {
-//     from: string[] = ['0-0-0'];
-//     to: string[] = ['1-1-1'];
-//
-//     constructor() {
-//         makeAutoObservable(this);
-//     }
-//
-//     sendData(from: string, to: string) {
-//         useEffect(() => {
-//             fetchStats('statistics',
-//                 {
-//                     id: "purch_9193548",
-//                     from: from,
-//                     to: to
-//                 })
-//                 .then((res) => {
-//                     initDataEconomic(res)
-//                 })
-//                 .catch(() => {
-//
-//                 })
-//         }, [])
-//     }
-//
-// }
-
 class DynamicLayout {
     currentFrame: string[] = ['Company'];
 
@@ -75,227 +36,13 @@ class DynamicLayout {
     }
 
     getFC(): JSX.Element {
-        const [dataPie, initDataPie] = useState([]);
-        const [dataBar, initDataBar] = useState([]);
-        const [dataCompany, initDataCompany] = useState([]);
-        const [dataEconomic, initDataEconomic] = useState({
-            totalIncomeNow: 0,
-            totalIncomePast: 1,
-            regions: []
-        })
-        const [dataLine, initDataLine] = useState([]);
-
-        let from = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0') + '-' + String(new Date().getDate()).padStart(2, '0');
-        let to = new Date().getFullYear() + '-' + String(new Date().getMonth()).padStart(2, '0') + '-' + String(new Date().getDate()).padStart(2, '0');
-
-        const fetchData = async (url: string) => {
-            const response = await fetch(`http://127.0.0.1:5001/api/${url}`,
-                {
-                    method: "POST",
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({"id": "purch_9193548"})
-                })
-            if (!response.ok) {
-                console.log(response)
-                throw new Error('Data coud not be fetched!')
-            } else {
-                return response.json();
-            }
-        }
-
-        const fetchStats = async (url: string, data: object) => {
-            try {
-                const response = await fetch(`http://127.0.0.1:5001/api/${url}`,
-                    {
-                        method: "POST",
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(data)
-                    })
-                return response.json();
-            } catch {
-                throw new Error('Data coud not be fetched!')
-            }
-        }
-
-
-        useEffect(() => {
-            fetchData('pieChart')
-                .then((res) => {
-                    initDataPie(res)
-                })
-                .catch((e) => {
-                    console.log(e)
-                })
-        }, [])
-
-        useEffect(() => {
-            fetchData('barChart')
-                .then((res) => {
-                    initDataBar(res)
-                })
-                .catch((e) => {
-                    console.log(e)
-                })
-        }, [])
-
-        useEffect(() => {
-            fetchData('curve')
-                .then((res) => {
-                    initDataLine(res)
-                })
-                .catch((e) => {
-                    console.log(e)
-                })
-        }, [])
-
-        useEffect(() => {
-            fetchData('sth')
-                .then((res) => {
-                    initDataCompany(res)
-                })
-                .catch((e) => {
-                    console.log(e)
-                })
-        }, [])
-
-        useEffect(() => {
-            fetchStats('statistics',
-                {
-                    id: "purch_9193548",
-                    from: from,
-                    to: to
-                })
-                .then((res) => {
-                    initDataEconomic(res)
-                })
-                .catch((res) => {
-
-                })
-        }, [])
-
-        console.log(dataLine)
-        //7716221444
-
-        const onInputChange = useCallback((dates: any, dateStrings: string[]) => {
-            if (!dates[0] || !dates[1]) {
-                return;
-            }
-
-            from = dateStrings[0];
-            to = dateStrings[1];
-            fetchStats('statistics',
-                {
-                    id: "purch_9193548",
-                    from: from,
-                    to: to
-                })
-                .then((res) => {
-                    initDataEconomic(res)
-                })
-                .catch((res) => {
-
-                })
-        }, ['YYYY-MM-DD']);
-
         if (this.currentFrame[0] == 'Company') {
-            return (<div>dv</div>)
-        } else if (this.currentFrame[0] == 'Compare') {
-            return (<span>None</span>)
+            return (
+                <Company/>
+            )
         } else {
             return (
-                <Layout style={{flexDirection: "row"}}>
-                    <Card style={{height: '690px', marginRight: '30px'}}
-                          title="Сводные данные за период"
-                          hoverable>
-                        <Space direction="vertical" size={12} style={{marginBottom: "10px"}}>
-                            <RangePicker
-                                defaultValue={
-                                    [dayjs(from, 'YYYY-MM-DD'),
-                                        dayjs(to, 'YYYY-MM-DD')]}
-                                onChange={onInputChange}
-                            />
-                        </Space>
-                        <Card
-                            style={{
-                                marginTop: "auto",
-                                marginBottom: "auto"
-                            }}
-                            type="inner"
-                            title="Прибыль за текущий период"
-                        >
-                            <Statistic
-                                value={(() => {
-                                    if (dataEconomic.totalIncomePast == 0) {
-                                        return dataEconomic.totalIncomeNow
-                                    }
-                                    return 0
-                                })()}
-                                precision={2}
-                                valueStyle={(() => {
-                                    if (dataEconomic.totalIncomePast > 1 || dataEconomic.totalIncomePast === 0) {
-                                        return {color: '#3f8600'}
-                                    }
-                                    return {color: '#cf1322'}
-                                })()}
-                                prefix={(() => {
-                                    if (dataEconomic.totalIncomePast > 1 || dataEconomic.totalIncomePast === 0) {
-                                        return <ArrowUpOutlined/>
-                                    }
-                                    return <ArrowDownOutlined/>
-                                })()}
-                                suffix="%"
-                            />
-                        </Card>
-                        <Card
-                            style={{marginTop: 16}}
-                            type="inner"
-                            title="Прибыль за прошлый период"
-                        >
-                            <Statistic value={`${(() => {
-                                if (dataEconomic.totalIncomePast > 1) {
-                                    return dataEconomic.totalIncomePast
-                                }
-                                return 1
-                            })()}₽`}/>
-                        </Card>
-                        <Card
-                            style={{marginTop: 16}}
-                            type="inner"
-                            title="Топ регионов по прибыли"
-                        >
-                            <List
-                                itemLayout="horizontal"
-                                dataSource={dataEconomic.regions}
-                                renderItem={(item, index) => (
-                                    <List.Item>
-                                        <List.Item.Meta
-                                            title={`${index + 1}. ${item['delivery_region'] ? item['delivery_region'] : 0}`}
-                                            description={item['price_y'] + '₽'}
-                                        />
-                                    </List.Item>
-                                )}
-                            />
-                        </Card>
-                    </Card>
-                    <Layout style={{flexDirection: "column", marginBottom: 0, height: '690px'}}>
-                        <Layout style={{flexDirection: "row", marginBottom: '30px'}}>
-                            <div style={{marginBottom: "30px"}}>
-                                {BarGraph(dataBar)}
-                            </div>
-                            <div style={{ marginLeft: '30px'}}>
-                                {PieGraph(dataPie)}
-                            </div>
-                        </Layout>
-                        {LineGraph(dataLine)}
-
-                    </Layout>
-                </Layout>
+                <Dashboard/>
             );
         }
     };
@@ -360,8 +107,6 @@ const App: React.FC = () => {
                             ltInstance.change("Compare");
                             console.log(ltInstance);
                         }}>
-                            <DesktopOutlined></DesktopOutlined>
-                            <span>Compare</span>
                         </Menu.Item>
                     </Menu>
                 </Sider>
